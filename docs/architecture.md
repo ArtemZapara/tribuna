@@ -91,8 +91,9 @@ this document.
 
 ### 3.2 Backend and analytics
 
-- **Python 3.12** initially. It has broad scientific and computer-vision package
-  support. Re-evaluate newer runtimes once all binary dependencies support them.
+- **Python 3.12** initially. The repository pins this minor line for reproducible
+  scientific and computer-vision package support. Re-evaluate newer runtimes only
+  after all binary dependencies support them.
 - **FastAPI + Pydantic**: typed HTTP/OpenAPI endpoints and optional WebSocket job
   notifications.
 - **SQLAlchemy 2 + Alembic**: portable relational persistence and migrations.
@@ -480,7 +481,8 @@ Store a long-form canonical table, partitioned by `match_id`, `dataset_id`, and
 | `match_time_us` | int64 | yes | Canonical clock |
 | `source_time_us` | int64 | no | Original provider clock/PTS |
 | `frame_number` | int64 | no | Provider/source frame number |
-| `entity_type` | dictionary string | yes | player, ball, referee, unknown |
+| `entity_type` | dictionary string | yes | player, ball, official, unknown |
+| `role` | dictionary string | no | outfield_player, goalkeeper, referee, assistant_referee, other |
 | `entity_id` | string/UUID | no | Null only for unresolved identity |
 | `team_id` | string/UUID | no | |
 | `x_m`, `y_m`, `z_m` | float32 | x/y yes | Physical coordinates |
@@ -643,11 +645,12 @@ tribuna/
 │           ├── types/
 │           └── test/
 ├── packages/
-│   └── data-contracts/
-│       ├── README.md
-│       ├── tracking.schema.json
-│       ├── events.schema.json
-│       └── examples/
+│   ├── data-contracts/
+│   │   ├── README.md
+│   │   ├── tracking.schema.json
+│   │   ├── events.schema.json
+│   │   └── examples/
+│   └── sample-inputs/             # provenance only; no third-party media
 ├── docs/
 │   ├── architecture.md
 │   ├── adr/
@@ -679,13 +682,17 @@ Each milestone ends in a demonstrable behavior and automated acceptance checks.
 
 - Commit this architecture and short ADRs for storage, coordinate system, and
   timeline mapping.
-- Obtain one legally usable, short tactical-camera clip and matching synthetic or
-  public tracking sample.
-- Define the canonical tracking CSV/Parquet schema and a ten-frame golden fixture.
-- Change the placeholder runtime from Python 3.14 to the selected Python 3.12 line.
+- Document a tactical-camera sample source and provide an offline builder that turns
+  an authorized local copy into a normalized ten-frame, video-only fixture. Do not
+  download or redistribute the source media.
+- Define the canonical tracking CSV/Parquet schema with independent synthetic
+  examples; do not imply that they describe the sample video.
+- Pin the repository, tooling, and CI to the selected Python 3.12 line.
 
-**Done when:** the fixture validates; expected pixel/pitch/time mappings are written
-as executable test cases; no production code is required.
+**Done when:** CI validates the contract and media builder entirely offline using
+synthetic inputs; a developer with an authorized local copy can produce a ten-frame
+sample with checksummed provenance and explicit media-time boundaries. Tracking,
+match-time, and coordinate mappings for that video are out of scope.
 
 ### Milestone 1 — repository foundation (2–3 days)
 

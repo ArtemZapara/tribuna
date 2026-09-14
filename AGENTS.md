@@ -36,6 +36,7 @@ The repository currently contains a minimal Python placeholder:
 ```bash
 uv sync
 uv run python main.py
+uv run pytest
 uv run ruff check .
 uv run ruff format --check .
 ```
@@ -44,10 +45,9 @@ Commands such as `make bootstrap`, `make dev`, frontend tests, API tests, and Do
 Compose are target workflows documented in the README. Do not claim they work until
 their supporting files have been implemented and verified.
 
-The scaffold currently targets Python 3.14. The architecture proposes selecting a
-Python version with verified wheels for all scientific and computer-vision
-dependencies before those dependencies are added. Treat that runtime change as an
-explicit implementation decision rather than an incidental edit.
+The repository targets Python 3.12. Keep `.python-version`, `requires-python`, Ruff,
+CI, and the lock file aligned to that minor line unless an explicit compatibility
+decision changes it.
 
 ## Architectural direction
 
@@ -262,4 +262,3 @@ A change is complete when:
 - documentation matches the implementation;
 - no secrets, large generated files, or licensed match assets were added;
 - failure and unavailable-data states are usable and observable.
-

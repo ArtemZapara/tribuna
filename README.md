@@ -4,9 +4,9 @@ Tribuna is a demonstration and research workspace for football analysis. It pair
 tactical-camera video with synchronized overlays and optional analytical views such
 as a top-down pitch radar, Voronoi regions, heatmaps, events, and derived metrics.
 
-> **Status:** architecture/bootstrap phase. The current repository is a minimal
-> Python scaffold; the application layout and dependencies described below are the
-> target for the first implementation milestones.
+> **Status:** Milestone 0 data-contract phase. The current repository contains the
+> executable tracking contract and reference fixtures; the application layout and
+> runtime dependencies described below remain the target for later milestones.
 
 The complete system design, data flow, schemas, folder structure, trade-offs, and
 testable delivery roadmap are in [docs/architecture.md](docs/architecture.md).
@@ -41,6 +41,7 @@ apps/backend/          FastAPI application, domain, importers, and analytics
 apps/worker/           long-running import, media, and analysis jobs
 apps/web/              React analysis workspace
 packages/data-contracts/ versioned tracking/event schemas and examples
+packages/sample-inputs/ source descriptors without redistributed media
 docs/                  architecture, ADRs, data formats, and method notes
 infra/                 container and local deployment definitions
 data/                  ignored local raw/canonical/derived assets
@@ -53,15 +54,14 @@ For the target application:
 
 - Git
 - [uv](https://docs.astral.sh/uv/) for Python environments and locking
-- Python 3.12 (selected for scientific/computer-vision ecosystem compatibility)
+- Python 3.12
 - Node.js current LTS and [pnpm](https://pnpm.io/)
 - FFmpeg, including `ffprobe`
 - A modern browser with WebGL support
 - Docker/Compose only for the shared-infrastructure profile
 
-The checked-in placeholder currently targets Python 3.14 and has no runtime
-dependencies. Milestone 0 changes it to the selected Python 3.12 line before CV and
-scientific dependencies are introduced.
+The repository targets the Python 3.12 minor line for reproducible scientific and
+computer-vision dependency support.
 
 ## Current scaffold setup
 
@@ -84,9 +84,72 @@ Hello from tribuna!
 Run the checks currently available:
 
 ```bash
+uv run pytest
 uv run ruff check .
 uv run ruff format --check .
 ```
+
+## Tracking data contract
+
+Canonical tracking contract v1 is defined in
+[`packages/data-contracts/tracking/v1`](packages/data-contracts/tracking/v1). The
+directory contains its machine-readable schema, CSV rules, example CSV, and the
+equivalent typed Parquet file.
+
+Rebuild the binary example after an intentional contract/example change:
+
+```bash
+uv run python -m scripts.build_contract_examples
+```
+
+## Local sample video
+
+Tribuna's video-only sample source is the tactical-camera upload identified by
+YouTube video ID [`oXn0KPPHzuY`](https://www.youtube.com/watch?v=oXn0KPPHzuY).
+Its observed metadata and usage notice are recorded in
+[`packages/sample-inputs/youtube_oXn0KPPHzuY/source.json`](packages/sample-inputs/youtube_oXn0KPPHzuY/source.json).
+
+No copy of the video or its frames is included in version control. The Tribuna
+application and CI never download it automatically. For private, authorized use, a
+developer can explicitly acquire a complete 1080p H.264/M4A source with the
+project's `yt-dlp` development tool:
+
+```bash
+mkdir -p data/source
+uv run yt-dlp \
+  --no-playlist \
+  --continue \
+  --no-overwrites \
+  --js-runtimes node \
+  -f "bv[height<=1080][ext=mp4][vcodec^=avc1]+ba[ext=m4a]/b[height<=1080][ext=mp4]" \
+  --merge-output-format mp4 \
+  -o "data/source/youtube_oXn0KPPHzuY.%(ext)s" \
+  "https://www.youtube.com/watch?v=oXn0KPPHzuY"
+```
+
+This command is user-initiated and is not run by setup scripts or CI. It must only
+be used when authorized by the service, the relevant rights holders, or applicable
+law.
+
+Build the normalized ten-frame sample from the resulting local copy with:
+
+```bash
+uv run python -m scripts.build_youtube_sample \
+  --video data/source/youtube_oXn0KPPHzuY.mp4 \
+  --output data/fixtures/youtube_oXn0KPPHzuY
+```
+
+The generated, Git-ignored directory contains `sample.mp4` and `manifest.json`.
+The sample is the first ten decoded frames normalized to H.264/YUV420p at 960×540
+and 25 fps, without audio and with media timestamps starting at zero. The manifest
+records input provenance, checksums, and the half-open media interval
+`[0, 400000)` microseconds.
+
+This video-only sample has no tracking observations, match clock, player identities,
+or pitch calibration. The synthetic tracking examples above validate the independent
+tracking contract. Supplying a local file does not imply permission to copy or use
+it; developers are responsible for complying with the service terms, rights-holder
+permissions, and applicable law.
 
 ## Target local setup
 
@@ -164,7 +227,8 @@ See [docs/architecture.md](docs/architecture.md) for the full contracts and sche
 
 Work proceeds in small vertical slices:
 
-1. Decisions, canonical fixture, and executable coordinate/time expectations.
+1. Decisions, canonical fixture, and executable coordinate/time expectations
+   (Milestone 0).
 2. Repository foundation and CI.
 3. Match creation and video playback.
 4. Tracking import and validation.

@@ -1,0 +1,5 @@
+schema_version,match_id,dataset_id,period,match_time_us,source_time_us,frame_number,entity_type,role,entity_id,team_id,x_m,y_m,z_m,vx_mps,vy_mps,speed_mps,image_x_px,image_y_px,visible,in_play,confidence,quality_flags
+1.0,example-match,example-tracking-v1,1,0,0,0,ball,,ball,,52.5,34.0,0.11,,,,480.0,270.0,true,true,0.98,0
+1.0,example-match,example-tracking-v1,1,0,0,0,official,referee,official-1,,52.5,34.0,,,,,470.0,250.0,true,,0.95,0
+1.0,example-match,example-tracking-v1,1,0,0,0,player,outfield_player,home-7,home,40.25,18.5,,1.2,-0.4,1.264911,420.0,310.0,true,true,0.99,0
+1.0,example-match,example-tracking-v1,1,40000,40000,1,player,outfield_player,away-4,away,106.0,20.0,,,,,530.0,305.0,true,true,0.91,1

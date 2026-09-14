@@ -1,0 +1,221 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tribuna.local/contracts/tracking/v1/schema.json",
+  "title": "Tribuna tracking observation v1.0",
+  "description": "One canonical entity observation at one match time.",
+  "type": "object",
+  "additionalProperties": false,
+  "x-contract": "tracking",
+  "x-schema-version": "1.0",
+  "x-column-order": [
+    "schema_version",
+    "match_id",
+    "dataset_id",
+    "period",
+    "match_time_us",
+    "source_time_us",
+    "frame_number",
+    "entity_type",
+    "role",
+    "entity_id",
+    "team_id",
+    "x_m",
+    "y_m",
+    "z_m",
+    "vx_mps",
+    "vy_mps",
+    "speed_mps",
+    "image_x_px",
+    "image_y_px",
+    "visible",
+    "in_play",
+    "confidence",
+    "quality_flags"
+  ],
+  "required": [
+    "schema_version",
+    "match_id",
+    "dataset_id",
+    "period",
+    "match_time_us",
+    "source_time_us",
+    "frame_number",
+    "entity_type",
+    "role",
+    "entity_id",
+    "team_id",
+    "x_m",
+    "y_m",
+    "z_m",
+    "vx_mps",
+    "vy_mps",
+    "speed_mps",
+    "image_x_px",
+    "image_y_px",
+    "visible",
+    "in_play",
+    "confidence",
+    "quality_flags"
+  ],
+  "x-csv": {
+    "encoding": "utf-8",
+    "header": true,
+    "delimiter": ",",
+    "line_terminator": "\n",
+    "null": "",
+    "true": "true",
+    "false": "false"
+  },
+  "x-parquet-schema-metadata": {
+    "tribuna.contract": "tracking",
+    "tribuna.schema_version": "1.0"
+  },
+  "properties": {
+    "schema_version": {
+      "const": "1.0",
+      "x-arrow-type": "string",
+      "x-nullable": false
+    },
+    "match_id": {
+      "type": "string",
+      "minLength": 1,
+      "x-arrow-type": "string",
+      "x-nullable": false
+    },
+    "dataset_id": {
+      "type": "string",
+      "minLength": 1,
+      "x-arrow-type": "string",
+      "x-nullable": false
+    },
+    "period": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 127,
+      "x-arrow-type": "int8",
+      "x-nullable": false
+    },
+    "match_time_us": {
+      "type": "integer",
+      "minimum": 0,
+      "x-arrow-type": "int64",
+      "x-nullable": false
+    },
+    "source_time_us": {
+      "type": ["integer", "null"],
+      "minimum": 0,
+      "x-arrow-type": "int64",
+      "x-nullable": true
+    },
+    "frame_number": {
+      "type": ["integer", "null"],
+      "minimum": 0,
+      "x-arrow-type": "int64",
+      "x-nullable": true
+    },
+    "entity_type": {
+      "enum": ["player", "ball", "official", "unknown"],
+      "x-arrow-type": "string",
+      "x-nullable": false
+    },
+    "role": {
+      "type": ["string", "null"],
+      "enum": [
+        "outfield_player",
+        "goalkeeper",
+        "referee",
+        "assistant_referee",
+        "other",
+        null
+      ],
+      "x-arrow-type": "string",
+      "x-nullable": true
+    },
+    "entity_id": {
+      "type": ["string", "null"],
+      "minLength": 1,
+      "x-arrow-type": "string",
+      "x-nullable": true
+    },
+    "team_id": {
+      "type": ["string", "null"],
+      "minLength": 1,
+      "x-arrow-type": "string",
+      "x-nullable": true
+    },
+    "x_m": {
+      "type": "number",
+      "x-finite": true,
+      "x-arrow-type": "float32",
+      "x-nullable": false
+    },
+    "y_m": {
+      "type": "number",
+      "x-finite": true,
+      "x-arrow-type": "float32",
+      "x-nullable": false
+    },
+    "z_m": {
+      "type": ["number", "null"],
+      "x-finite": true,
+      "x-arrow-type": "float32",
+      "x-nullable": true
+    },
+    "vx_mps": {
+      "type": ["number", "null"],
+      "x-finite": true,
+      "x-arrow-type": "float32",
+      "x-nullable": true
+    },
+    "vy_mps": {
+      "type": ["number", "null"],
+      "x-finite": true,
+      "x-arrow-type": "float32",
+      "x-nullable": true
+    },
+    "speed_mps": {
+      "type": ["number", "null"],
+      "minimum": 0,
+      "x-finite": true,
+      "x-arrow-type": "float32",
+      "x-nullable": true
+    },
+    "image_x_px": {
+      "type": ["number", "null"],
+      "x-finite": true,
+      "x-arrow-type": "float32",
+      "x-nullable": true
+    },
+    "image_y_px": {
+      "type": ["number", "null"],
+      "x-finite": true,
+      "x-arrow-type": "float32",
+      "x-nullable": true
+    },
+    "visible": {
+      "type": ["boolean", "null"],
+      "x-arrow-type": "bool",
+      "x-nullable": true
+    },
+    "in_play": {
+      "type": ["boolean", "null"],
+      "x-arrow-type": "bool",
+      "x-nullable": true
+    },
+    "confidence": {
+      "type": ["number", "null"],
+      "minimum": 0,
+      "maximum": 1,
+      "x-finite": true,
+      "x-arrow-type": "float32",
+      "x-nullable": true
+    },
+    "quality_flags": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 4294967295,
+      "x-arrow-type": "uint32",
+      "x-nullable": false
+    }
+  }
+}

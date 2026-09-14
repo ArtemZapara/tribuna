@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "source_type": "youtube_video",
+  "video_id": "oXn0KPPHzuY",
+  "canonical_url": "https://www.youtube.com/watch?v=oXn0KPPHzuY",
+  "title": "FULL MATCH | Liverpool vs Real Madrid | Final | Exclusive Tactical Camera HD 1080p | 2022 |",
+  "uploader": "Chepsi007",
+  "observed_metadata": {
+    "retrieved_on": "2026-09-14",
+    "duration_seconds": 6866,
+    "width": 1920,
+    "height": 1080,
+    "frame_rate": "25/1"
+  },
+  "usage": {
+    "media_committed_to_repository": false,
+    "license_declared_by_this_descriptor": null,
+    "acquisition": "User-initiated private download with the project development tool yt-dlp",
+    "automated_by_application_or_ci": false,
+    "notice": "This descriptor does not grant a licence to copy, download, or redistribute the video. Supply a local copy only when your use is authorized by the service, the relevant rights holders, or applicable law. Source and generated media must remain outside Git."
+  }
+}
