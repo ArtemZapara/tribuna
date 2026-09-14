@@ -8,3 +8,7 @@ wheels/
 
 # Virtual environments
 .venv
+
+# Local configuration and downloaded/generated match data
+.env
+data/
