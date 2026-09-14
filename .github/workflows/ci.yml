@@ -26,6 +26,10 @@ jobs:
       - name: Install dependencies
         run: uv sync --all-groups
 
+      - name: Install FFmpeg
+        run: |
+          run: sudo apt-get update && sudo apt-get install -y ffmpeg
+
       - name: Verify FFmpeg
         run: |
           ffmpeg -version
