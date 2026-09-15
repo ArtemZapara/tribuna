@@ -131,7 +131,7 @@ This command is user-initiated and is not run by setup scripts or CI. It must on
 be used when authorized by the service, the relevant rights holders, or applicable
 law.
 
-Build the normalized ten-frame sample from the resulting local copy with:
+Build the normalized 40-second sample beginning at source time `02:40` with:
 
 ```bash
 uv run python -m scripts.build_youtube_sample \
@@ -140,10 +140,11 @@ uv run python -m scripts.build_youtube_sample \
 ```
 
 The generated, Git-ignored directory contains `sample.mp4` and `manifest.json`.
-The sample is the first ten decoded frames normalized to H.264/YUV420p at 960×540
-and 25 fps, without audio and with media timestamps starting at zero. The manifest
-records input provenance, checksums, and the half-open media interval
-`[0, 400000)` microseconds.
+The sample maps source presentation timestamps `[160000000, 200000000)` to local
+media timestamps `[0, 40000000)`, normalized to H.264/YUV420p at 960×540 and 25
+fps. It contains exactly 1,000 frames, has no audio, and resets output timestamps to
+zero. The manifest records input provenance, checksums, both half-open intervals,
+and their one-to-one timeline mapping.
 
 This video-only sample has no tracking observations, match clock, player identities,
 or pitch calibration. The synthetic tracking examples above validate the independent

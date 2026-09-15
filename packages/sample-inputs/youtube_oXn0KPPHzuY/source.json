@@ -12,6 +12,14 @@
     "height": 1080,
     "frame_rate": "25/1"
   },
+  "sample_selection": {
+    "source_start_us": 160000000,
+    "source_end_us": 200000000,
+    "interval": "half-open",
+    "duration_us": 40000000,
+    "output_frame_rate": "25/1",
+    "output_frame_count": 1000
+  },
   "usage": {
     "media_committed_to_repository": false,
     "license_declared_by_this_descriptor": null,

@@ -683,16 +683,16 @@ Each milestone ends in a demonstrable behavior and automated acceptance checks.
 - Commit this architecture and short ADRs for storage, coordinate system, and
   timeline mapping.
 - Document a tactical-camera sample source and provide an offline builder that turns
-  an authorized local copy into a normalized ten-frame, video-only fixture. Do not
-  download or redistribute the source media.
+  an authorized local copy into a normalized 40-second, video-only fixture beginning
+  at source time 02:40. Do not redistribute the source media.
 - Define the canonical tracking CSV/Parquet schema with independent synthetic
   examples; do not imply that they describe the sample video.
 - Pin the repository, tooling, and CI to the selected Python 3.12 line.
 
 **Done when:** CI validates the contract and media builder entirely offline using
-synthetic inputs; a developer with an authorized local copy can produce a ten-frame
-sample with checksummed provenance and explicit media-time boundaries. Tracking,
-match-time, and coordinate mappings for that video are out of scope.
+synthetic inputs; a developer with an authorized local copy can produce a 40-second
+sample with checksummed provenance and explicit source/media-time boundaries.
+Tracking, match-time, and coordinate mappings for that video are out of scope.
 
 ### Milestone 1 — repository foundation (2–3 days)
 

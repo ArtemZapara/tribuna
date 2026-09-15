@@ -1,4 +1,4 @@
-"""Build a local ten-frame video sample from an authorized source copy.
+"""Build a local 40-second video sample from an authorized source copy.
 
 This module performs no network access and does not download content from YouTube.
 """
@@ -20,10 +20,12 @@ from typing import Any
 SAMPLE_ID = "youtube_oXn0KPPHzuY"
 SOURCE_VIDEO_ID = "oXn0KPPHzuY"
 SOURCE_URL = "https://www.youtube.com/watch?v=oXn0KPPHzuY"
-FRAME_COUNT = 10
 FRAME_RATE = 25
 FRAME_DURATION_US = 40_000
-SAMPLE_DURATION_US = FRAME_COUNT * FRAME_DURATION_US
+SOURCE_START_US = 160_000_000
+SAMPLE_DURATION_US = 40_000_000
+SOURCE_END_US = SOURCE_START_US + SAMPLE_DURATION_US
+FRAME_COUNT = SAMPLE_DURATION_US // FRAME_DURATION_US
 OUTPUT_WIDTH = 960
 OUTPUT_HEIGHT = 540
 HASH_CHUNK_SIZE = 1024 * 1024
@@ -54,7 +56,7 @@ def build_sample(
     ffmpeg: str = "ffmpeg",
     ffprobe: str = "ffprobe",
 ) -> dict[str, Any]:
-    """Normalize the first ten decoded frames and return the written manifest."""
+    """Normalize the configured source interval and return the written manifest."""
     if not video.is_file():
         raise SampleBuildError(f"source video does not exist: {video}")
     if output.exists() and (not output.is_dir() or any(output.iterdir())):
@@ -70,9 +72,9 @@ def build_sample(
     ):
         raise SampleBuildError("source video dimensions are unavailable")
     source_duration_us = _duration_us(source_video, source["format"])
-    if source_duration_us < SAMPLE_DURATION_US:
+    if source_duration_us < SOURCE_END_US:
         raise SampleBuildError(
-            f"source video must be at least {SAMPLE_DURATION_US} microseconds long"
+            f"source video must extend through {SOURCE_END_US} microseconds"
         )
 
     with tempfile.TemporaryDirectory(prefix="tribuna-youtube-sample-") as temporary:
@@ -100,9 +102,12 @@ def build_sample(
                 "duration_us": source_duration_us,
             },
             "selection": {
-                "strategy": "first_ten_decoded_video_frames",
-                "first_source_frame": 0,
-                "last_source_frame": FRAME_COUNT - 1,
+                "strategy": "source_presentation_timestamp_interval",
+                "source_interval": {
+                    "start_us": SOURCE_START_US,
+                    "end_us": SOURCE_END_US,
+                    "interval": "half-open",
+                },
             },
             "video": {
                 "filename": "sample.mp4",
@@ -118,6 +123,15 @@ def build_sample(
                 "start_us": 0,
                 "end_us": SAMPLE_DURATION_US,
                 "interval": "half-open",
+            },
+            "timeline_mapping": {
+                "media_start_us": 0,
+                "media_end_us": SAMPLE_DURATION_US,
+                "source_start_us": SOURCE_START_US,
+                "source_end_us": SOURCE_END_US,
+                "rate_numerator": 1,
+                "rate_denominator": 1,
+                "formula": f"source_time_us = media_time_us + {SOURCE_START_US}",
             },
             "transformation": {
                 "timestamps_reset_to_zero": True,
@@ -182,9 +196,11 @@ def _probe_media(path: Path, *, ffprobe: str, count_frames: bool) -> dict[str, A
 
 def _extract_sample(source: Path, destination: Path, *, ffmpeg: str) -> None:
     video_filter = (
-        f"select=lt(n\\,{FRAME_COUNT}),"
+        f"trim=start={SOURCE_START_US / 1_000_000:g}:"
+        f"end={SOURCE_END_US / 1_000_000:g},"
+        "setpts=PTS-STARTPTS,"
         f"scale={OUTPUT_WIDTH}:{OUTPUT_HEIGHT}:flags=lanczos,"
-        f"setpts=N/({FRAME_RATE}*TB)"
+        f"fps={FRAME_RATE}"
     )
     command = [
         ffmpeg,

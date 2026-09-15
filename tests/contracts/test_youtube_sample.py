@@ -13,6 +13,8 @@ import pytest
 from scripts.build_youtube_sample import (
     FRAME_COUNT,
     SAMPLE_DURATION_US,
+    SOURCE_END_US,
+    SOURCE_START_US,
     SampleBuildError,
     build_sample,
 )
@@ -37,14 +39,18 @@ def source_video(tmp_path_factory: pytest.TempPathFactory) -> Path:
             "-f",
             "lavfi",
             "-i",
-            "testsrc2=size=1280x720:rate=25:duration=1",
+            "color=color=black:size=320x180:rate=25:duration=201",
             "-f",
             "lavfi",
             "-i",
-            "sine=frequency=1000:sample_rate=48000:duration=1",
+            "sine=frequency=1000:sample_rate=48000:duration=201",
             "-shortest",
+            "-vf",
+            "drawbox=x=0:y=0:w=iw:h=ih:color=white:t=fill:enable='gte(t,160)'",
             "-c:v",
             "libx264",
+            "-preset",
+            "ultrafast",
             "-pix_fmt",
             "yuv420p",
             "-c:a",
@@ -70,6 +76,14 @@ def test_source_descriptor_identifies_video_and_limits_usage() -> None:
         "height": 1080,
         "frame_rate": "25/1",
     }
+    assert descriptor["sample_selection"] == {
+        "source_start_us": SOURCE_START_US,
+        "source_end_us": SOURCE_END_US,
+        "interval": "half-open",
+        "duration_us": SAMPLE_DURATION_US,
+        "output_frame_rate": "25/1",
+        "output_frame_count": FRAME_COUNT,
+    }
     assert descriptor["usage"]["media_committed_to_repository"] is False
     assert descriptor["usage"]["acquisition"].endswith("yt-dlp")
     assert descriptor["usage"]["automated_by_application_or_ci"] is False
@@ -90,16 +104,29 @@ def test_builder_writes_normalized_video_and_manifest(
     assert manifest["sample_id"] == "youtube_oXn0KPPHzuY"
     assert manifest["upstream"]["source_sha256"] == _sha256(source_video)
     assert manifest["selection"] == {
-        "strategy": "first_ten_decoded_video_frames",
-        "first_source_frame": 0,
-        "last_source_frame": 9,
+        "strategy": "source_presentation_timestamp_interval",
+        "source_interval": {
+            "start_us": SOURCE_START_US,
+            "end_us": SOURCE_END_US,
+            "interval": "half-open",
+        },
     }
     assert manifest["media_interval"] == {
         "start_us": 0,
         "end_us": SAMPLE_DURATION_US,
         "interval": "half-open",
     }
+    assert manifest["timeline_mapping"] == {
+        "media_start_us": 0,
+        "media_end_us": SAMPLE_DURATION_US,
+        "source_start_us": SOURCE_START_US,
+        "source_end_us": SOURCE_END_US,
+        "rate_numerator": 1,
+        "rate_denominator": 1,
+        "formula": f"source_time_us = media_time_us + {SOURCE_START_US}",
+    }
     assert manifest["checksums"] == {"sample.mp4": _sha256(output / "sample.mp4")}
+    assert _first_frame_mean_luma(output / "sample.mp4") > 200
 
     videos = [stream for stream in media["streams"] if stream["codec_type"] == "video"]
     audios = [stream for stream in media["streams"] if stream["codec_type"] == "audio"]
@@ -112,7 +139,7 @@ def test_builder_writes_normalized_video_and_manifest(
     assert videos[0]["avg_frame_rate"] == "25/1"
     assert int(videos[0]["nb_read_frames"]) == FRAME_COUNT
     assert float(media["format"]["start_time"]) == pytest.approx(0.0, abs=1e-6)
-    assert float(media["format"]["duration"]) == pytest.approx(0.4, abs=0.01)
+    assert float(media["format"]["duration"]) == pytest.approx(40.0, abs=0.01)
 
 
 def test_builder_rejects_missing_source_and_nonempty_output(
@@ -144,7 +171,7 @@ def test_builder_rejects_short_and_audio_only_inputs(tmp_path: Path) -> None:
             str(short),
         ]
     )
-    with pytest.raises(SampleBuildError, match="must be at least"):
+    with pytest.raises(SampleBuildError, match="must extend through"):
         build_sample(video=short, output=tmp_path / "short-out")
 
     audio_only = tmp_path / "audio.m4a"
@@ -220,3 +247,26 @@ def _sha256(path: Path) -> str:
         for chunk in iter(lambda: stream.read(1024 * 1024), b""):
             digest.update(chunk)
     return digest.hexdigest()
+
+
+def _first_frame_mean_luma(path: Path) -> int:
+    completed = subprocess.run(
+        [
+            "ffmpeg",
+            "-v",
+            "error",
+            "-i",
+            str(path),
+            "-frames:v",
+            "1",
+            "-vf",
+            "scale=1:1,format=gray",
+            "-f",
+            "rawvideo",
+            "-",
+        ],
+        check=True,
+        capture_output=True,
+    )
+    assert len(completed.stdout) == 1
+    return completed.stdout[0]
