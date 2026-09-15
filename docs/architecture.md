@@ -684,7 +684,8 @@ Each milestone ends in a demonstrable behavior and automated acceptance checks.
   timeline mapping.
 - Document a tactical-camera sample source and provide an offline builder that turns
   an authorized local copy into a normalized 40-second, video-only fixture beginning
-  at source time 02:40. Do not redistribute the source media.
+  at source time 02:40 while preserving its coded resolution. Do not redistribute
+  the source media.
 - Define the canonical tracking CSV/Parquet schema with independent synthetic
   examples; do not imply that they describe the sample video.
 - Pin the repository, tooling, and CI to the selected Python 3.12 line.

@@ -18,7 +18,8 @@
     "interval": "half-open",
     "duration_us": 40000000,
     "output_frame_rate": "25/1",
-    "output_frame_count": 1000
+    "output_frame_count": 1000,
+    "resolution": "preserve_source"
   },
   "usage": {
     "media_committed_to_repository": false,

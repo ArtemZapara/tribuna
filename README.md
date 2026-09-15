@@ -141,10 +141,11 @@ uv run python -m scripts.build_youtube_sample \
 
 The generated, Git-ignored directory contains `sample.mp4` and `manifest.json`.
 The sample maps source presentation timestamps `[160000000, 200000000)` to local
-media timestamps `[0, 40000000)`, normalized to H.264/YUV420p at 960×540 and 25
-fps. It contains exactly 1,000 frames, has no audio, and resets output timestamps to
-zero. The manifest records input provenance, checksums, both half-open intervals,
-and their one-to-one timeline mapping.
+media timestamps `[0, 40000000)`, normalized to H.264/YUV420p at 25 fps while
+preserving the source's coded width and height. For the documented source, the
+result is 1920×1080. It contains exactly 1,000 frames, has no audio, and resets
+output timestamps to zero. The manifest records input provenance, checksums, both
+half-open intervals, and their one-to-one timeline mapping.
 
 This video-only sample has no tracking observations, match clock, player identities,
 or pitch calibration. The synthetic tracking examples above validate the independent

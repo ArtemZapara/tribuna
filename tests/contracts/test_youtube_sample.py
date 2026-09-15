@@ -83,6 +83,7 @@ def test_source_descriptor_identifies_video_and_limits_usage() -> None:
         "duration_us": SAMPLE_DURATION_US,
         "output_frame_rate": "25/1",
         "output_frame_count": FRAME_COUNT,
+        "resolution": "preserve_source",
     }
     assert descriptor["usage"]["media_committed_to_repository"] is False
     assert descriptor["usage"]["acquisition"].endswith("yt-dlp")
@@ -125,6 +126,10 @@ def test_builder_writes_normalized_video_and_manifest(
         "rate_denominator": 1,
         "formula": f"source_time_us = media_time_us + {SOURCE_START_US}",
     }
+    assert manifest["video"]["width"] == manifest["upstream"]["width"] == 320
+    assert manifest["video"]["height"] == manifest["upstream"]["height"] == 180
+    assert manifest["transformation"]["resolution_preserved"] is True
+    assert "scaling" not in manifest["transformation"]
     assert manifest["checksums"] == {"sample.mp4": _sha256(output / "sample.mp4")}
     assert _first_frame_mean_luma(output / "sample.mp4") > 200
 
@@ -134,8 +139,8 @@ def test_builder_writes_normalized_video_and_manifest(
     assert not audios
     assert videos[0]["codec_name"] == "h264"
     assert videos[0]["pix_fmt"] == "yuv420p"
-    assert videos[0]["width"] == 960
-    assert videos[0]["height"] == 540
+    assert videos[0]["width"] == 320
+    assert videos[0]["height"] == 180
     assert videos[0]["avg_frame_rate"] == "25/1"
     assert int(videos[0]["nb_read_frames"]) == FRAME_COUNT
     assert float(media["format"]["start_time"]) == pytest.approx(0.0, abs=1e-6)

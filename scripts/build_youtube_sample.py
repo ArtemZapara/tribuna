@@ -26,8 +26,6 @@ SOURCE_START_US = 160_000_000
 SAMPLE_DURATION_US = 40_000_000
 SOURCE_END_US = SOURCE_START_US + SAMPLE_DURATION_US
 FRAME_COUNT = SAMPLE_DURATION_US // FRAME_DURATION_US
-OUTPUT_WIDTH = 960
-OUTPUT_HEIGHT = 540
 HASH_CHUNK_SIZE = 1024 * 1024
 START_TIME_TOLERANCE_SECONDS = 0.000001
 DURATION_TOLERANCE_US = 10_000
@@ -71,6 +69,8 @@ def build_sample(
         or int(source_video.get("height", 0)) <= 0
     ):
         raise SampleBuildError("source video dimensions are unavailable")
+    source_width = int(source_video["width"])
+    source_height = int(source_video["height"])
     source_duration_us = _duration_us(source_video, source["format"])
     if source_duration_us < SOURCE_END_US:
         raise SampleBuildError(
@@ -82,7 +82,12 @@ def build_sample(
         sample_path = staging / "sample.mp4"
         _extract_sample(video, sample_path, ffmpeg=ffmpeg)
         sample = _probe_media(sample_path, ffprobe=ffprobe, count_frames=True)
-        _validate_sample(sample)
+        _validate_sample(
+            sample,
+            expected_width=source_width,
+            expected_height=source_height,
+        )
+        sample_video = sample["video_streams"][0]
 
         output_sha256 = _sha256(sample_path)
         manifest: dict[str, Any] = {
@@ -96,8 +101,8 @@ def build_sample(
                 "source_sha256": _sha256(video),
                 "codec": source_video.get("codec_name"),
                 "pixel_format": source_video.get("pix_fmt"),
-                "width": int(source_video["width"]),
-                "height": int(source_video["height"]),
+                "width": source_width,
+                "height": source_height,
                 "frame_rate": source_video.get("avg_frame_rate"),
                 "duration_us": source_duration_us,
             },
@@ -113,8 +118,8 @@ def build_sample(
                 "filename": "sample.mp4",
                 "codec": "h264",
                 "pixel_format": "yuv420p",
-                "width": OUTPUT_WIDTH,
-                "height": OUTPUT_HEIGHT,
+                "width": int(sample_video["width"]),
+                "height": int(sample_video["height"]),
                 "frame_rate": f"{FRAME_RATE}/1",
                 "frame_count": FRAME_COUNT,
                 "has_audio": False,
@@ -136,7 +141,7 @@ def build_sample(
             "transformation": {
                 "timestamps_reset_to_zero": True,
                 "audio_removed": True,
-                "scaling": "960x540 using Lanczos resampling",
+                "resolution_preserved": True,
             },
             "checksums": {"sample.mp4": output_sha256},
         }
@@ -199,7 +204,6 @@ def _extract_sample(source: Path, destination: Path, *, ffmpeg: str) -> None:
         f"trim=start={SOURCE_START_US / 1_000_000:g}:"
         f"end={SOURCE_END_US / 1_000_000:g},"
         "setpts=PTS-STARTPTS,"
-        f"scale={OUTPUT_WIDTH}:{OUTPUT_HEIGHT}:flags=lanczos,"
         f"fps={FRAME_RATE}"
     )
     command = [
@@ -234,7 +238,9 @@ def _extract_sample(source: Path, destination: Path, *, ffmpeg: str) -> None:
         raise SampleBuildError(detail) from error
 
 
-def _validate_sample(media: dict[str, Any]) -> None:
+def _validate_sample(
+    media: dict[str, Any], *, expected_width: int, expected_height: int
+) -> None:
     videos = media["video_streams"]
     if len(videos) != 1:
         raise SampleBuildError("normalized sample must contain one video stream")
@@ -253,8 +259,8 @@ def _validate_sample(media: dict[str, Any]) -> None:
     expected = {
         "codec": "h264",
         "pixel_format": "yuv420p",
-        "width": OUTPUT_WIDTH,
-        "height": OUTPUT_HEIGHT,
+        "width": expected_width,
+        "height": expected_height,
         "frame_rate": Fraction(FRAME_RATE, 1),
         "frame_count": FRAME_COUNT,
     }
