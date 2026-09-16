@@ -1,13 +1,21 @@
 [project]
 name = "tribuna"
 version = "0.1.0"
-description = "Add your description here"
+description = "Football analysis demonstration and research workspace"
 readme = "README.md"
 requires-python = ">=3.12,<3.13"
 dependencies = []
 
+[tool.uv]
+package = false
+
+[tool.uv.workspace]
+members = ["apps/backend"]
+
 [dependency-groups]
 dev = [
+    "httpx>=0.28.0",
+    "mypy>=1.18.0",
     "pyarrow>=18.0.0",
     "pytest>=8.3.0",
     "ruff>=0.16.4",
@@ -56,5 +64,11 @@ lines-between-types = 1
 "tests/**/*.py" = ["PLR2004", "TRY003"]
 
 [tool.pytest.ini_options]
-pythonpath = ["."]
-testpaths = ["tests"]
+pythonpath = [".", "apps/backend/src"]
+testpaths = ["tests", "apps/backend/tests"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+mypy_path = ["apps/backend/src"]
+plugins = ["pydantic.mypy"]

@@ -697,14 +697,18 @@ Tracking, match-time, and coordinate mappings for that video are out of scope.
 
 ### Milestone 1 — repository foundation (2–3 days)
 
+**Status:** Implemented on 2026-09-16.
+
 - Establish the `apps/backend` and `apps/web` workspaces.
 - Add configuration validation, structured logging, health endpoint, linting, type
   checks, unit test runners, and CI.
 - Add `.env.example` and thin `make bootstrap`, `make dev`, and `make check` targets.
 - Generate frontend API types from a trivial OpenAPI endpoint.
 
-**Done when:** a clean clone can bootstrap, run both apps, open a health page, and
-pass all checks using documented commands.
+**Done:** the locked uv/pnpm workspaces bootstrap through the documented Make
+targets; FastAPI exposes a typed, request-ID-aware health endpoint; React renders
+loading, healthy, and unavailable states from generated OpenAPI types; CI runs the
+same drift, lint, format, type, test, and build checks.
 
 ### Milestone 2 — match and media vertical slice (3–5 days)
 

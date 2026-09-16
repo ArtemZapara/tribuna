@@ -31,23 +31,25 @@ Consequential design changes should include an Architecture Decision Record unde
 
 ## Current repository state
 
-The repository currently contains a minimal Python placeholder:
+The repository contains a Python uv workspace and a private pnpm workspace. The
+supported contributor workflow is:
 
 ```bash
-uv sync
-uv run python main.py
-uv run pytest
-uv run ruff check .
-uv run ruff format --check .
+make bootstrap
+make generate
+make dev
+make check
 ```
 
-Commands such as `make bootstrap`, `make dev`, frontend tests, API tests, and Docker
-Compose are target workflows documented in the README. Do not claim they work until
-their supporting files have been implemented and verified.
+`apps/backend` implements the packaged FastAPI health API. `apps/web` implements the
+React health shell and consumes checked-in types generated from OpenAPI. Persistence,
+media APIs, a worker, Playwright, and Docker Compose remain future work; do not claim
+those workflows exist until implemented and verified.
 
 The repository targets Python 3.12. Keep `.python-version`, `requires-python`, Ruff,
 CI, and the lock file aligned to that minor line unless an explicit compatibility
-decision changes it.
+decision changes it. It also targets Node.js 24 LTS and pnpm 12.4.2 through
+Corepack; keep `.nvmrc`, `packageManager`, CI, and `pnpm-lock.yaml` aligned.
 
 ## Architectural direction
 

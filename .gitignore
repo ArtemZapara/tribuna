@@ -9,6 +9,12 @@ wheels/
 # Virtual environments
 .venv
 
+# JavaScript-generated files
+node_modules/
+.pnpm-store/
+apps/web/dist/
+apps/web/coverage/
+
 # Local configuration and downloaded/generated match data
 .env
 data/

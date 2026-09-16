@@ -1,0 +1,71 @@
+{
+  "components": {
+    "schemas": {
+      "HealthResponse": {
+        "description": "Liveness response for the API process.",
+        "properties": {
+          "environment": {
+            "enum": [
+              "development",
+              "test",
+              "production"
+            ],
+            "title": "Environment",
+            "type": "string"
+          },
+          "service": {
+            "const": "tribuna-api",
+            "title": "Service",
+            "type": "string"
+          },
+          "status": {
+            "const": "ok",
+            "title": "Status",
+            "type": "string"
+          },
+          "version": {
+            "title": "Version",
+            "type": "string"
+          }
+        },
+        "required": [
+          "status",
+          "service",
+          "version",
+          "environment"
+        ],
+        "title": "HealthResponse",
+        "type": "object"
+      }
+    }
+  },
+  "info": {
+    "title": "Tribuna API",
+    "version": "0.1.0"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/api/v1/health": {
+      "get": {
+        "description": "Report process liveness without testing deferred dependencies.",
+        "operationId": "getHealth",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Get Health",
+        "tags": [
+          "system"
+        ]
+      }
+    }
+  }
+}
