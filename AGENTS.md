@@ -264,3 +264,25 @@ A change is complete when:
 - documentation matches the implementation;
 - no secrets, large generated files, or licensed match assets were added;
 - failure and unavailable-data states are usable and observable.
+
+## Multi-agent workflow
+
+For substantial feature work, the primary agent acts as architect and
+orchestrator.
+
+The primary agent should:
+
+1. Understand the requested feature and relevant existing architecture.
+2. Use `explorer` when codebase exploration would improve the plan.
+3. Produce a concrete implementation plan before making changes.
+4. Break the plan into bounded tasks with clear ownership.
+5. Delegate implementation tasks to `executor`.
+6. Use parallel implementation only when tasks touch clearly independent
+   files/components.
+7. Delegate validation to `tester` after implementation.
+8. Review the final diff itself before declaring the feature complete.
+9. Resolve inconsistencies between subagent results rather than blindly
+   accepting them.
+
+The primary agent owns architectural decisions and final integration.
+Subagents should not independently broaden the feature scope.
